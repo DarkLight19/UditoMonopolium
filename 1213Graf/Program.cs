@@ -67,7 +67,7 @@ namespace _1213Graf
                 list[0].melyiketSzereti = melyikudito; //Emiatt itt is konkrétan a 'grafCopy' elemét változtatjuk
                 list.RemoveAt(0);
             }
-            
+
             return grafCopy;
         }
 
@@ -79,19 +79,27 @@ namespace _1213Graf
             return solution < solutionTwo ? solution : solutionTwo;
         }
 
+        public static int aktMin = int.MaxValue;
         private static int rekurzivMegoldas(List<Node> graf, int milyencsomag, int hanyadikkor)
         {
-            Console.WriteLine("idáig megy");
             if (rekurzivMegoldasCheck(graf))
+            {
+                aktMin = hanyadikkor;
                 return hanyadikkor;
+            }
             else
             {
-                List<int> megoldasok = new List<int>();
-                for (int i = 0; i < graf.Count; i++) //mindegyik Node ra elküldjük ugyanazt a csomagot, mindegyik egyszer vissza fog adni egy megoldást
-                    megoldasok.Add(rekurzivMegoldas(nodeAtvaltas(graf, milyencsomag, i), milyencsomag == 1 ? 0 : 1, hanyadikkor + 1));
+                if (aktMin > hanyadikkor)
+                {
+                    List<int> megoldasok = new List<int>();
+                    for (int i = 0; i < graf.Count; i++) //mindegyik Node ra elküldjük ugyanazt a csomagot, mindegyik egyszer vissza fog adni egy megoldást
+                        megoldasok.Add(rekurzivMegoldas(nodeAtvaltas(graf, milyencsomag, i), milyencsomag == 1 ? 0 : 1, hanyadikkor + 1));
 
-                megoldasok.Sort();
-                return megoldasok[0];
+                    megoldasok.Sort();
+                    return megoldasok[0];
+                }
+                else
+                    return int.MaxValue;
             }
         }
 
@@ -105,7 +113,6 @@ namespace _1213Graf
                     mindegyikUgyanaz = false;
                     break;
                 }
-
             return mindegyikUgyanaz;
         }
         static void Main(string[] args)
@@ -129,6 +136,7 @@ namespace _1213Graf
                         graf[s[1]].connectedTo.Add(s[0]);
                 }
 
+                aktMin = int.MaxValue;
                 Console.WriteLine();
                 Console.WriteLine(i + 1 + ". feladat megoldása: ");
                 Console.WriteLine(rekurzivVerzioIndito(graf));
