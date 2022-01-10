@@ -1,0 +1,7 @@
+F:\---------IMI------\------INFÓ------\-----------HÁÁÁZII\1213Graf\1213Graf\bin\Debug\1213Graf.exe.config
+F:\---------IMI------\------INFÓ------\-----------HÁÁÁZII\1213Graf\1213Graf\bin\Debug\1213Graf.exe
+F:\---------IMI------\------INFÓ------\-----------HÁÁÁZII\1213Graf\1213Graf\bin\Debug\1213Graf.pdb
+F:\---------IMI------\------INFÓ------\-----------HÁÁÁZII\1213Graf\1213Graf\obj\Debug\1213Graf.csproj.AssemblyReference.cache
+F:\---------IMI------\------INFÓ------\-----------HÁÁÁZII\1213Graf\1213Graf\obj\Debug\1213Graf.csproj.CoreCompileInputs.cache
+F:\---------IMI------\------INFÓ------\-----------HÁÁÁZII\1213Graf\1213Graf\obj\Debug\1213Graf.exe
+F:\---------IMI------\------INFÓ------\-----------HÁÁÁZII\1213Graf\1213Graf\obj\Debug\1213Graf.pdb
