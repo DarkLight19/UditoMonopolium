@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace _1213Graf
 {
@@ -41,6 +42,9 @@ namespace _1213Graf
             }
         }
 
+        public static Stopwatch timer = new Stopwatch();
+
+        #region take1
         private static List<Node> nodeAtvaltas(List<Node> graf, int melyikudito, int index)
         {
             List<Node> grafCopy = new List<Node>();
@@ -115,33 +119,194 @@ namespace _1213Graf
                 }
             return mindegyikUgyanaz;
         }
-        static void Main(string[] args)
+
+        #endregion
+
+        #region take2
+        private static List<Node> takeTwoNodeAtvaltas(List<Node> graf, int melyikudito, int index)
         {
-            int T = int.Parse(Console.ReadLine());
-            for (int i = 0; i < T; i++)
+            List<Node> grafCopy = new List<Node>();
+            foreach (var item in graf)
+                grafCopy.Add(new Node(item.melyiketSzereti, new List<int>(item.connectedTo)));//muszáj így, hogy ne memóriacímet kapjon
+
+            if (graf[index].melyiketSzereti == melyikudito) //eddig is azt szerette
+                return grafCopy;
+
+            List<Node> list = new List<Node>();
+            list.Add(grafCopy[index]); //mivel "komplex" változó csak memóriacímet kap
+
+            List<int> nodesThatAreTheSameColor = new List<int>();
+
+            while (list.Count != 0)
             {
-                int[] s = Console.ReadLine().Split(' ').Select(x => int.Parse(x.ToString())).ToArray();
-                int N = s[0];
-                int M = s[1];
-                List<Node> graf = new List<Node>();
-                s = Console.ReadLine().Split(' ').Select(x => int.Parse(x.ToString())).ToArray();
-                for (int j = 0; j < N; j++)
-                    graf.Add(new Node(s[j], new List<int>()));
-                for (int j = 0; j < M; j++)
+                List<Node> hozaadjuk = new List<Node>();
+                foreach (var item in list)
+                    foreach (var i in item.connectedTo)
+                        if (grafCopy[i].melyiketSzereti != melyikudito)
+                            if (!nodesThatAreTheSameColor.Contains(i))
+                            {
+                                hozaadjuk.Add(grafCopy[i]);
+                                nodesThatAreTheSameColor.Add(i);
+                            }
+
+                foreach (var item in hozaadjuk)
+                    list.Add(item);
+
+                list[0].melyiketSzereti = melyikudito; //Emiatt itt is konkrétan a 'grafCopy' elemét változtatjuk
+                list[0].connectedTo = new List<int>(); //összeolvasztva
+                list.RemoveAt(0);
+            }
+
+            List<int> toBeDeleted = new List<int>();
+            foreach (var item in grafCopy[index].connectedTo)
+                if (nodesThatAreTheSameColor.Contains(item))
+                    toBeDeleted.Add(item);
+
+            toBeDeleted.Sort();
+            toBeDeleted.Reverse();
+            foreach (var item in toBeDeleted)
+                grafCopy[index].connectedTo.RemoveAt(item);
+
+            foreach (var item in graf)
+                for (int i = 0; i < item.connectedTo.Count; i++)
                 {
-                    s = Console.ReadLine().Split(' ').Select(x => int.Parse(x.ToString())-1).ToArray();
-                    if (!graf[s[0]].connectedTo.Contains(s[1]))
-                        graf[s[0]].connectedTo.Add(s[1]);
-                    if (!graf[s[1]].connectedTo.Contains(s[0]))
-                        graf[s[1]].connectedTo.Add(s[0]);
+                    if (nodesThatAreTheSameColor.Contains(item.connectedTo[i]))//aki eddig egy összeolvasztott node-ra mutatott az az eredetire fog
+                    {
+                        item.connectedTo.RemoveAt(i);
+                        if (!item.connectedTo.Contains(index))
+                            item.connectedTo.Add(index);
+                        --i;//nehogy kihagyjunk egyet
+                    }
                 }
 
-                aktMin = int.MaxValue;
-                Console.WriteLine();
-                Console.WriteLine(i + 1 + ". feladat megoldása: ");
-                Console.WriteLine(rekurzivVerzioIndito(graf));
-                Console.WriteLine();
+            return grafCopy;
+        }
+
+        private static int takeTwoRekurzivVerzioIndito(List<Node> graf)
+        {
+            int solution = rekurzivMegoldas(graf, 0, 0);
+            int solutionTwo = rekurzivMegoldas(graf, 1, 0);
+
+            return solution < solutionTwo ? solution : solutionTwo;
+        }
+
+        public static int takeTwoAktMin = int.MaxValue;
+        private static int takeTwoRekurzivMegoldas(List<Node> graf, int milyencsomag, int hanyadikkor)
+        {
+            if (takeTwoRekurzivMegoldasCheck(graf))
+            {
+                takeTwoAktMin = hanyadikkor;
+                return hanyadikkor;
             }
+            else
+            {
+                if (takeTwoAktMin > hanyadikkor)
+                {
+                    List<int> megoldasok = new List<int>();
+                    for (int i = 0; i < graf.Count; i++) //mindegyik Node ra elküldjük ugyanazt a csomagot, mindegyik egyszer vissza fog adni egy megoldást
+                        if (graf[i].connectedTo.Count != 0) //ha már össze lett vonva egy másikkal akkor arra ne küldjünk
+                            megoldasok.Add(takeTwoRekurzivMegoldas(takeTwoNodeAtvaltas(graf, milyencsomag, i), milyencsomag == 1 ? 0 : 1, hanyadikkor + 1));
+
+                    megoldasok.Sort();
+                    return megoldasok[0];//min
+                }
+                else
+                    return int.MaxValue;
+            }
+        }
+
+        private static bool takeTwoRekurzivMegoldasCheck(List<Node> graf)
+        {
+            bool mindegyikUgyanaz = true;
+            int melyikItal = graf[0].melyiketSzereti;
+            foreach (var item in graf)
+                if (item.melyiketSzereti != melyikItal)
+                {
+                    mindegyikUgyanaz = false;
+                    break;
+                }
+            return mindegyikUgyanaz;
+        }
+
+        #endregion
+
+        static void Main(string[] args)
+        {
+            string melyiketFuttassuk = "take2";
+
+            //kissebbekre jobb az 1. megoldás
+            /*
+            if (N < 100)
+                melyiketFuttassuk = "take1";
+            else
+                melyiketFuttassuk = "take2";*/
+
+
+            if (melyiketFuttassuk == "take1")
+            {
+                timer.Start();//időzítő elindítása
+                int T = int.Parse(Console.ReadLine());
+
+                for (int i = 0; i < T; i++)
+                {
+                    int[] s = Console.ReadLine().Split(' ').Select(x => int.Parse(x.ToString())).ToArray();
+                    int N = s[0];
+                    int M = s[1];
+
+                    List<Node> graf = new List<Node>();
+                    s = Console.ReadLine().Split(' ').Select(x => int.Parse(x.ToString())).ToArray();
+                    for (int j = 0; j < N; j++)
+                        graf.Add(new Node(s[j], new List<int>()));
+                    for (int j = 0; j < M; j++)
+                    {
+                        s = Console.ReadLine().Split(' ').Select(x => int.Parse(x.ToString()) - 1).ToArray();
+                        if (!graf[s[0]].connectedTo.Contains(s[1]))
+                            graf[s[0]].connectedTo.Add(s[1]);
+                        if (!graf[s[1]].connectedTo.Contains(s[0]))
+                            graf[s[1]].connectedTo.Add(s[0]);
+                    }
+
+                    aktMin = int.MaxValue;
+                    Console.WriteLine();
+                    Console.WriteLine(i + 1 + ". feladat megoldása: ");
+                    Console.WriteLine(rekurzivVerzioIndito(graf));
+                    Console.WriteLine();
+                }
+            }
+
+            else if(melyiketFuttassuk == "take2")
+            {
+                timer.Start();//időzítő elindítása
+                int T = int.Parse(Console.ReadLine());
+
+                for (int i = 0; i < T; i++)
+                {
+                    int[] s = Console.ReadLine().Split(' ').Select(x => int.Parse(x.ToString())).ToArray();
+                    int N = s[0];
+                    int M = s[1];
+
+                    List<Node> graf = new List<Node>();
+                    s = Console.ReadLine().Split(' ').Select(x => int.Parse(x.ToString())).ToArray();
+                    for (int j = 0; j < N; j++)
+                        graf.Add(new Node(s[j], new List<int>()));
+                    for (int j = 0; j < M; j++)
+                    {
+                        s = Console.ReadLine().Split(' ').Select(x => int.Parse(x.ToString()) - 1).ToArray();
+                        if (!graf[s[0]].connectedTo.Contains(s[1]))
+                            graf[s[0]].connectedTo.Add(s[1]);
+                        if (!graf[s[1]].connectedTo.Contains(s[0]))
+                            graf[s[1]].connectedTo.Add(s[0]);
+                    }
+
+                    aktMin = int.MaxValue;
+                    Console.WriteLine();
+                    Console.WriteLine(i + 1 + ". feladat megoldása: ");
+                    Console.WriteLine(takeTwoRekurzivVerzioIndito(graf));
+                    Console.WriteLine();
+                }
+            }
+
+            Console.WriteLine("A program : " + timer.Elapsed + " másodperc alatt futott le.");//időzítő kiirása
         }
     }
 }
